@@ -1,0 +1,8 @@
+D:\Development\Coding\assembla\UNITY\Temp\bin\Debug\Assembly-CSharp.dll
+D:\Development\Coding\assembla\UNITY\Temp\bin\Debug\Assembly-CSharp.pdb
+D:\Development\Coding\assembla\UNITY\Temp\bin\Debug\UnityEditor.dll
+D:\Development\Coding\assembla\UNITY\Temp\bin\Debug\UnityEngine.dll
+D:\Development\Coding\assembla\UNITY\Temp\bin\Debug\nunit.framework.dll
+D:\Development\Coding\assembla\UNITY\obj\Debug\ResolveAssemblyReference.cache
+D:\Development\Coding\assembla\UNITY\obj\Debug\Assembly-CSharp.dll
+D:\Development\Coding\assembla\UNITY\obj\Debug\Assembly-CSharp.pdb
