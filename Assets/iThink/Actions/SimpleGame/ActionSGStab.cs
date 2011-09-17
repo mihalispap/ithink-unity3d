@@ -12,29 +12,29 @@ class ActionSGStab : iThinkAction
         Loc = loc;
         Knife = knife;
 
-        fixPreconditions();
-        fixEffects();
+        initPreconditions();
+        initEffects();
     }
 
-    public override void setArg1( GameObject loc ) { Loc = loc; }
-    public override void setArg2( GameObject knife ) { Knife = knife; }
+    public void setArg1( GameObject loc ) { Loc = loc; }
+    public void setArg2( GameObject knife ) { Knife = knife; }
 
-    public override GameObject getArg1() { return Loc; }
-    public override GameObject getArg2() { return Knife; }
+    public GameObject getArg1() { return Loc; }
+    public GameObject getArg2() { return Knife; }
 
-    public override void fixPreconditions()
+    public override void initPreconditions()
     {
-        base.fixPreconditions();
-        preConditions.Add( new npcHolding( Knife ) );
-        preConditions.Add( new knife( Knife ) );
-        preConditions.Add( new npcAt( Loc ) );
-        preConditions.Add( new playerAt( Loc ) );
+        base.initPreconditions();
+        preConditions.Add( new iThinkFact("npcHolding", Knife ) );
+        preConditions.Add( new iThinkFact("knife", Knife ) );
+        preConditions.Add( new iThinkFact("npcAt", Loc ) );
+        preConditions.Add( new iThinkFact("playerAt", Loc ) );
     }
 
-    public override void fixEffects()
+    public override void initEffects()
     {
-        base.fixEffects();
-        effects.Add( new playerDown() );
+        base.initEffects();
+        effects.Add( new iThinkFact("playerDown") );
     }
 
 }

@@ -14,35 +14,35 @@ class ActionSGShoot : iThinkAction
         Dir = dir;
         Gun = gun;
 
-        fixPreconditions();
-        fixEffects();
+        initPreconditions();
+        initEffects();
     }
 
-    public override void setArg1( GameObject locnpc ) { Locnpc = locnpc; }
-    public override void setArg2( GameObject locplayer ) { Locplayer = locplayer; }
-    public override void setArg3( GameObject dir ) { Dir = dir; }
-    public override void setArg4( GameObject gun ) { Gun = gun; }
+    public void setArg1( GameObject locnpc ) { Locnpc = locnpc; }
+    public void setArg2( GameObject locplayer ) { Locplayer = locplayer; }
+    public void setArg3( GameObject dir ) { Dir = dir; }
+    public void setArg4( GameObject gun ) { Gun = gun; }
 
-    public override GameObject getArg1() { return Locnpc; }
-    public override GameObject getArg2() { return Locnpc; }
-    public override GameObject getArg3() { return Locnpc; }
-    public override GameObject getArg4() { return Locnpc; }
+    public GameObject getArg1() { return Locnpc; }
+    public GameObject getArg2() { return Locnpc; }
+    public GameObject getArg3() { return Locnpc; }
+    public GameObject getArg4() { return Locnpc; }
 
-    public override void fixPreconditions()
+    public override void initPreconditions()
     {
-        base.fixPreconditions();
-        preConditions.Add( new npcHolding( Gun ) );
-        preConditions.Add( new gun( Gun ) );
-        preConditions.Add( new adjacent( Locnpc, Locplayer, Dir ) );
-        preConditions.Add( new npcAt( Locnpc ) );
-        preConditions.Add( new playerAt( Locplayer ) );
-        preConditions.Add( new npcFacing( Dir ) );
+        base.initPreconditions();
+        preConditions.Add( new iThinkFact("npcHolding", Gun ) );
+        preConditions.Add( new iThinkFact("gun", Gun ) );
+        preConditions.Add( new iThinkFact("adjacent", Locnpc, Locplayer, Dir ) );
+        preConditions.Add( new iThinkFact("npcAt", Locnpc ) );
+        preConditions.Add( new iThinkFact("playerAt", Locplayer ) );
+        preConditions.Add( new iThinkFact("npcFacing", Dir ) );
     }
 
-    public override void fixEffects( GameObject agent )
+    public override void initEffects()
     {
-        base.fixEffects();
-        effects.Add( new playerDown() );
+        base.initEffects();
+        effects.Add( new iThinkFact("playerDown") );
     }
 
 }

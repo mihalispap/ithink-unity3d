@@ -48,9 +48,4 @@ public class iThinkPlanStep
     public iThinkState getState() { return State; }
     public void setState( iThinkState NewState ) { State = NewState; }
     public List<iThinkAction> getActions() { return Actions; }
-
-    public void appendAction( iThinkAction action )
-    {
-        Actions.Add( action );
-    }
 }

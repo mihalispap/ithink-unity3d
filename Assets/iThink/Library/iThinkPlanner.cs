@@ -35,7 +35,6 @@ public class iThinkPlanner
 
     public bool forwardSearch( iThinkState InitialState, iThinkState GoalState, iThinkActionSet ActionSet, int Method )
     {
-        int it = 1;
         iThinkPlan ReturnVal;
 
         _OpenStates.Clear();
@@ -45,13 +44,13 @@ public class iThinkPlanner
         _OpenStates.Add( step );
         _VisitedStates.Add( step.getState() );
 
-        //foreach ( iThinkAction action in ActionSet.getActions() )
-        //    DebugConsole.Log( "Possible action: " + action.getName() );
-
         switch ( Method )
         {
             case 0:
-                ReturnVal = dfs( GoalState, ActionSet, _OpenStates, _VisitedStates, it );
+                ReturnVal = dfs( GoalState, ActionSet, _OpenStates, _VisitedStates );
+                break;
+            case 1:
+                ReturnVal = bestFs( GoalState, ActionSet, _OpenStates, _VisitedStates );
                 break;
             default:
                 ReturnVal = new iThinkPlan();
@@ -65,82 +64,178 @@ public class iThinkPlanner
         return false;
     }
 
-    public iThinkPlan dfs( iThinkState GoalState, iThinkActionSet ActionSet, List<iThinkPlanStep> OpenStates, List<iThinkState> VisitedStates, int it )
+    //! DFS
+    public iThinkPlan dfs( iThinkState GoalState, iThinkActionSet ActionSet, List<iThinkPlanStep> OpenStates, List<iThinkState> VisitedStates )
     {
+        int it = 0;
         iThinkPlanStep curStep, nextStep;
         iThinkState CurrentState;
 
-        DebugConsole.Log( "*DFS* Iteration: " + it, Color.magenta );
-        DebugConsole.Log( "*DFS* OpenStates count: (" + OpenStates.Count + ")", Color.magenta );
-
-        foreach ( iThinkPlanStep PlanStep in OpenStates )
+        while ( OpenStates.Count != 0 )
         {
-            if ( compareStates( PlanStep.getState(), GoalState ) )
+            Debug.LogWarning( "Iteration #" + it );
+
+            foreach ( iThinkPlanStep PlanStep in OpenStates )
             {
-                DebugConsole.Log( "*ITHINK* I've found a Goal state!", Color.green );
-                Plan.setPlan( PlanStep );
-                return Plan;
-            }
-        }
-
-        if ( OpenStates.Count == 0 )
-        {
-            DebugConsole.Log( "*ITHINK* OpenStates is empty and I couldn't find a plan.", Color.red );
-            return null;
-        }
-
-        List<iThinkAction> applicableActions = new List<iThinkAction>();
-
-        curStep = new iThinkPlanStep( OpenStates[0] );
-        CurrentState = OpenStates[0].getState();
-        OpenStates.RemoveAt( 0 );
-
-        applicableActions = getApplicable( CurrentState, ActionSet.getActions() );
-
-        DebugConsole.Log( "Applicable action count: " + applicableActions.Count, Color.yellow );
-        //foreach ( iThinkAction action in applicableActions )
-        //    DebugConsole.Log( "Applicable action: " + action.getName(), Color.yellow );
-
-        CurrentState.debugPrint( "[CurrentState]", Color.green );
-
-        foreach ( iThinkAction action in applicableActions )
-        {
-            bool found = false;
-
-            // TODO: Add "statnode" for statistics retrieval
-            nextStep = progress( curStep, action );
-
-            nextStep.getState().debugPrint( "[NextStep after " + action.getName() + "( " + action.getArg1().name + ", " + action.getArg2().name + " )]" );
-
-            foreach ( iThinkState state in VisitedStates )
-            {
-                if ( state == nextStep.getState() )
+                if ( compareStates( PlanStep.getState(), GoalState ) )
                 {
-                    found = true;
-                    break;
+                    Debug.Log( "Found Plan (DFS)" );
+                    Plan.setPlan( PlanStep );
+                    return Plan;
                 }
             }
 
-            if ( found == false )
-            {
-                OpenStates.Add( nextStep );
-                VisitedStates.Add( nextStep.getState() );
-            }
-        }
+            List<iThinkAction> applicableActions = new List<iThinkAction>();
 
-        return dfs( GoalState, ActionSet, OpenStates, VisitedStates, ++it );
+            curStep = new iThinkPlanStep( OpenStates[0] );
+            CurrentState = OpenStates[0].getState();
+            OpenStates.RemoveAt( 0 );
+
+            CurrentState.debugPrint();
+
+            applicableActions = getApplicable( CurrentState, ActionSet.getActions() );
+
+            foreach ( iThinkAction action in applicableActions )
+            {
+                if ( action.getName().Equals( "Stab" ) )
+                    Debug.LogWarning( "APPLICABLE STAB ACTION!" );
+
+                bool found = false;
+
+                // TODO: Add "statnode" for statistics retrieval
+                nextStep = progress( curStep, action );
+
+                if ( compareStates( nextStep.getState(), GoalState ) )
+                {
+                    Debug.Log( "Found Plan (DFS)" );
+                    Plan.setPlan( nextStep );
+                    return Plan;
+                }
+
+                foreach ( iThinkState state in VisitedStates )
+                {
+                    if ( state == nextStep.getState() )
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if ( found == false )
+                {
+                    OpenStates.Add( nextStep );
+                    VisitedStates.Add( nextStep.getState() );
+                }
+            }
+
+            ++it;
+        }
+        Debug.Log( "Didn't find Plan (DFS)" );
+        return null;
     }
 
+    //! BestFs
+    public iThinkPlan bestFs( iThinkState GoalState, iThinkActionSet ActionSet, List<iThinkPlanStep> OpenStates, List<iThinkState> VisitedStates )
+    {
+        int it = 0;
+        iThinkPlanStep curStep, nextStep;
+        iThinkState CurrentState;
+
+        while ( OpenStates.Count != 0 )
+        {
+            Debug.LogWarning( "Iteration #" + it );
+
+            List<iThinkAction> applicableActions = new List<iThinkAction>();
+            List<iThinkPlanStep> stateList = new List<iThinkPlanStep>();
+
+            curStep = new iThinkPlanStep( OpenStates[0] );
+            CurrentState = OpenStates[0].getState();
+            OpenStates.RemoveAt( 0 );
+
+            if ( compareStates( CurrentState, GoalState ) )
+            {
+                Debug.Log( "Found Plan (BFS) *Before* foreach applicable" );
+                Plan.setPlan( curStep );
+                return Plan;
+            }
+
+            applicableActions = getApplicable( CurrentState, ActionSet.getActions() );
+
+            foreach ( iThinkAction action in applicableActions )
+            {
+                if ( action.getName().Equals( "Stab" ) )
+                    Debug.LogWarning( "APPLICABLE STAB ACTION!" );
+
+                bool found = false;
+                nextStep = progress( curStep, action );
+
+                if ( compareStates( nextStep.getState(), GoalState ) )
+                {
+                    Debug.Log( "Found Plan (BFS) *After* foreach applicable" );
+                    Plan.setPlan( nextStep );
+                    return Plan;
+                }
+
+                foreach ( iThinkState state in VisitedStates )
+                {
+                    if ( state == nextStep.getState() )
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if ( found == false )
+                {
+                    int Cost = hFunction( nextStep.getState(), GoalState );
+                    nextStep.getState().setCost( Cost );
+                    stateList.Add( nextStep );
+                    VisitedStates.Add( nextStep.getState() );
+                }
+
+            }
+
+            OpenStates.AddRange( stateList );
+            OpenStates.Sort( delegate( iThinkPlanStep obj1, iThinkPlanStep obj2 )
+                            {
+                                if ( obj1.getState().getCost() == obj2.getState().getCost() )
+                                    return 0;
+                                else if ( obj1.getState().getCost() > obj2.getState().getCost() )
+                                    return -1;
+                                else
+                                    return 1;
+                            }
+                           );
+            ++it;
+        }
+        Debug.Log( "Didn't find plan (BFS)" );
+        return null;
+    }
+
+    private int hFunction( iThinkState nextState, iThinkState GoalState )
+    {
+        int counter = 0;
+        foreach ( iThinkFact fact in nextState.getFactList() )
+        {
+            foreach ( iThinkFact goalFact in GoalState.getFactList() )
+            {
+                if ( fact == goalFact )
+                {
+                    counter++;
+                    break;
+                }
+            }
+        }
+        return counter;
+    }
+
+    //! Helper Functions
     public iThinkPlanStep progress( iThinkPlanStep Step, iThinkAction Action )
     {
         iThinkPlanStep NewStep = new iThinkPlanStep( Step );
         List<iThinkAction> curActions;
 
         curActions = NewStep.getActions();
-
-        foreach ( iThinkAction _act in curActions )
-            DebugConsole.Log( "TempPlan step: " + _act.getName() + "( " + _act.getArg1().name + ", " + _act.getArg2().name + " )", Color.grey );
-
         curActions.Add( Action );
 
         NewStep.setState( Action.applyEffects( Step.getState() ) );
@@ -154,13 +249,11 @@ public class iThinkPlanner
 
         foreach ( iThinkAction action in Actions )
         {
+            if ( action == null )
+                break;
+
             if ( action.validate( State ) )
-            {
-                DebugConsole.Log( "(" + action.getName() + "-" + action.getArg1().name + "-" + action.getArg2().name + ") *VALIDATED*", Color.green );
                 ApplicableActions.Add( action );
-            }
-            else
-                DebugConsole.Log( "[validate (" + action.getName() + "-" + action.getArg1().name + "-" + action.getArg2().name + ")] *NOT* Validated", Color.red );
         }
 
         return ApplicableActions;
@@ -172,30 +265,12 @@ public class iThinkPlanner
         int counter = 0;
         foreach ( iThinkFact fact in goalState.getFactList() )
         {
-            /*Debug.Log( "-=-=-=-=-=-=-" );
-
-            foreach ( iThinkFact _fact in curState.getFactList() )
-            {
-                if ( _fact.getObj2() != null )
-                    Debug.LogWarning( "Fact: " + _fact.getName() + "( " + _fact.getObj1().name + ", " + _fact.getObj2().name + " )" );
-                else if ( _fact.getObj1() != null )
-                    Debug.LogWarning( "Fact: " + _fact.getName() + "( " + _fact.getObj1().name + " )" );
-                else
-                    Debug.LogWarning( "Fact: " + _fact.getName() );
-            }*/
-            //Debug.Log( "--->" );
             foreach ( iThinkFact check in curState.getFactList() )
             {
-                //Debug.Log( "Checking Goal for fact: " + fact.getName() + "-" + fact.getObj1() + "-" + fact.getObj2() );
-                //Debug.Log( "and check is: " + check.getName() + "-" + check.getObj1() + "-" + check.getObj2() );
-
                 if ( check == null )
                     return false;
-                else
-                {
-                    if ( check == fact )
-                        counter++;
-                }
+                else if ( check == fact )
+                    counter++;
             }
         }
         if ( counter == goalState.getFactList().Count )

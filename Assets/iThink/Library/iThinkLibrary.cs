@@ -1,4 +1,6 @@
-﻿///
+﻿
+
+///
 /// <summary>
 ///
 /// iThink GOAP library v0.0.4
@@ -18,6 +20,7 @@ using UnityEngine;
 
 namespace iThink
 {
+
     public static class iThinkLibrary
     {
     }

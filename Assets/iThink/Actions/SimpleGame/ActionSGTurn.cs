@@ -5,36 +5,34 @@ using UnityEngine;
 
 class ActionSGTurn : iThinkAction
 {
-    GameObject From, To;
-    public ActionSGTurn( string name, GameObject from, GameObject to )
+    GameObject Fdir, Tdir;
+    public ActionSGTurn( string name, GameObject fdir, GameObject tdir )
         : base( name )
     {
-        From = from;
-        To = to;
+        Fdir = fdir;
+        Tdir = tdir;
 
-        fixPreconditions();
-        fixEffects();
+        initPreconditions();
+        initEffects();
     }
 
-    public override void setArg1( GameObject from ) { From = from; }
-    public override void setArg2( GameObject to ) { To = to; }
+    public void setArg1( GameObject fdir ) { Fdir = fdir; }
+    public void setArg2( GameObject tdir ) { Tdir = tdir; }
 
-    public override GameObject getArg1() { return From; }
-    public override GameObject getArg2() { return To; }
+    public GameObject getArg1() { return Fdir; }
+    public GameObject getArg2() { return Tdir; }
 
-    public override void fixPreconditions( GameObject fdir, GameObject tdir )
+    public override void initPreconditions()
     {
-        base.fixPreconditions();
-        preConditions.Add( new npcFacing( fdir ) );
-        //preConditions.Add( new dir( fdir ) );
-        preConditions.Add( new dir( tdir ) );
+        base.initPreconditions();
+        preConditions.Add( new iThinkFact("npcFacing", Fdir ) );
     }
 
-    public override void fixEffects( GameObject fdir, GameObject tdir )
+    public override void initEffects()
     {
-        base.fixEffects();
-        effects.Add( new npcFacing( tdir ) );
-        effects.Remove( new npcFacing( fdir ) );
+        base.initEffects();
+        effects.Add( new iThinkFact("npcFacing", Tdir ) );
+        effects.Add( new iThinkFact("npcFacing", false, Fdir ) );
     }
 
 }

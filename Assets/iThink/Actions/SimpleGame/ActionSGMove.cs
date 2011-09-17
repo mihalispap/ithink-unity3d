@@ -13,31 +13,31 @@ class ActionSGMove : iThinkAction
         To = to;
         Dir = dir;
 
-        fixPreconditions();
-        fixEffects();
+        initPreconditions();
+        initEffects();
     }
 
-    public override void setArg1( GameObject from ) { From = from; }
-    public override void setArg2( GameObject to ) { To = to; }
-    public override void setArg3( GameObject dir ) { Dir = dir; }
+    public void setArg1( GameObject from ) { From = from; }
+    public void setArg2( GameObject to ) { To = to; }
+    public void setArg3( GameObject dir ) { Dir = dir; }
 
-    public override GameObject getArg1() { return From; }
-    public override GameObject getArg2() { return To; }
-    public override GameObject getArg3() { return Dir; }
+    public GameObject getArg1() { return From; }
+    public GameObject getArg2() { return To; }
+    public GameObject getArg3() { return Dir; }
 
-    public override void fixPreconditions()
+    public override void initPreconditions()
     {
-        base.fixPreconditions();
-        preConditions.Add( new npcAt( From ) );
-        preConditions.Add( new npcFacing( Dir ) );
-        preConditions.Add( new adjacent( From, To, Dir ) );
+        base.initPreconditions();
+        preConditions.Add( new iThinkFact( "npcAt", From ) );
+        preConditions.Add( new iThinkFact( "npcFacing", Dir ) );
+        preConditions.Add( new iThinkFact( "adjacent", From, To, Dir ) );
     }
 
-    public override void fixEffects()
+    public override void initEffects()
     {
-        base.fixEffects();
-        effects.Add( new npcAt( To ) );
-        effects.Remove( new npcAt( From ) );
+        base.initEffects();
+        effects.Add( new iThinkFact("npcAt", To ) );
+        effects.Add( new iThinkFact("npcAt", false, From ) );
     }
 
 }

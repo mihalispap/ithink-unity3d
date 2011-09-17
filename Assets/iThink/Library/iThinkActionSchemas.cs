@@ -16,174 +16,234 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class unify
+public class datakeeper
 {
-    public GameObject obj1 { get; set; }
-    public GameObject obj2 { get; set; }
-    public GameObject obj3 { get; set; }
-    public GameObject obj4 { get; set; }
-    public GameObject important { get; set; }
+    public Dictionary<int, List<GameObject>> collection { get; set; }
 };
 
 public class iThinkActionSchemas
 {
-    GameObject agent;
-    List<GameObject> someParts;
-    List<GameObject> workingParts;
-    List<unify> pairs;
-    //List<unify> moveTrips;
-    //List<unify> turnPairs;
-    //List<unify> pickPairs;
-    //List<unify> shootQuads;
-    //List<unify> stabPairs;
-
+    string[] schemaElements;
     string[] actionElements;
+    int globalCounter = 0;
+    datakeeper objs;
+    List<iThinkAction> tempActionList;
+    List<GameObject[]> combinations;
 
-    public iThinkActionSchemas() { }
-
-    public List<GameObject> splitter( List<GameObject> GameParts, string action )
+    public iThinkActionSchemas()
     {
-        someParts = new List<GameObject>();
-        actionElements = action.Split( '-' );
+        objs = new datakeeper();
+        objs.collection = new Dictionary<int, List<GameObject>>();
+        tempActionList = new List<iThinkAction>();
+    }
 
+    public List<iThinkAction> generateActions( List<GameObject> GameParts, List<iThinkFact> FactList, string schema, int method )
+    {
+        clearData();
+        schemaParser( schema );
+        searchComponents( GameParts, FactList );
+        Unificator( method );
+        actionGenerator( combinations );
+        return tempActionList;
+    }
+
+    private void schemaParser( string schema )
+    {
+        schemaElements = schema.Split( '-' );
+    }
+
+    private void searchComponents( List<GameObject> GameParts, List<iThinkFact> FactList )
+    {
+        for ( int i = 2 ; i < schemaElements.Length ; i++ )
+        {
+            actionElements = schemaElements[i].Split( '~' );
+            switch ( actionElements[0] )
+            {
+                case "Tag":
+                    searchGameParts( GameParts );
+                    break;
+                case "Fact":
+                    searchFacts( FactList );
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    //Search for game Parts
+    private void searchGameParts( List<GameObject> GameParts )
+    {
+        List<GameObject> someParts = new List<GameObject>();
         someParts = GameParts.FindAll( delegate( GameObject obj1 )
         {
-            if ( obj1.tag.ToString().Equals( actionElements[2] ) )
+            if ( obj1.tag.ToString().Equals( actionElements[1] ) )
                 return true;
             return false;
         } );
 
-        workingParts = GameParts;
-        return someParts;
+        objs.collection.Add( globalCounter, someParts );
+        globalCounter++;
     }
 
-    public List<unify> unifier( List<GameObject> GameParts, GameObject agent )
+    private void searchFacts( List<iThinkFact> FactList )
     {
-        pairs = new List<unify>();
-        switch ( actionElements[0] )
+        List<iThinkFact> someFacts = new List<iThinkFact>();
+        List<GameObject> someParts = new List<GameObject>();
+        someFacts = FactList.FindAll( delegate( iThinkFact obj1 )
         {
-            case "ActionSGMove":
+            if ( obj1.getName().Equals( actionElements[1] ) )
+                return true;
+            return false;
+        } );
+
+        foreach ( iThinkFact fact in someFacts )
+        {
+            someParts.Add( fact.getObj( int.Parse( actionElements[2] ) -1 ) );
+        }
+
+        objs.collection.Add( globalCounter, someParts );
+        globalCounter++;
+    }
+
+    //Cartesian products for unification
+    private void Unificator( int method )
+    {
+        switch ( method )
+        {
+            case 1:
+                combinations = CartesianProductIterative();
                 break;
-            case "ActionSGTurn":
-                break;
-            case "ActionSGPickUp":
-                break;
-            case "ActionSGStab":
-                break;
-            case "ActionSGShoot":
-                break;
-            default:
-                Debug.LogError( "Bad action unification" );
+            case 2:
+                combinations = CartesianProductRecursive();
                 break;
         }
-        return pairs;
     }
 
-    public List<iThinkAction> actionCreator( List<unify> pairs, List<GameObject> GameParts, GameObject agent )
+    private List<GameObject[]> CartesianProductIterative()
     {
-        List<iThinkAction> actionList = new List<iThinkAction>();
-        iThinkAction action;
-        GameObject loc;
-        foreach ( unify pair in pairs )
+        var accum = new List<GameObject[]>();
+        if ( objs.collection.Count > 0 )
         {
-            switch ( actionElements[0] )
-            {
-                case "ActionSGMove":
-                    action = new ActionMoveTo( "Move", pair.obj1, pair.obj2 );
-                    actionList.Add( action );
-                    break;
-                case "ActionSGTurn":
-                    action = new ActionPickUp( "Turn", pair.obj1, pair.obj2 );
-                    actionList.Add( action );
-                    break;
-                case "ActionSGPickUp":
-                    action = new ActionPickUp( "PickUp", pair.obj1, pair.obj2 );
-                    actionList.Add( action );
-                    break;
-                case "ActionSGStab":
-                    action = new ActionPickUp( "Stab", pair.obj1, pair.obj2 );
-                    actionList.Add( action );
-                    break;
-                case "ActionSGShoot":
-                    action = new ActionPickUp( "Shoot", pair.obj1, pair.obj2 );
-                    actionList.Add( action );
-                    break;
-
-                /* THIS IS FOR THE LOCS&KNIFE DEMOS
-                case "ActionMoveTo":
-                    action = new ActionMoveTo( "ActionMoveTo", pair.obj1, pair.obj2 );
-                    action.fixPreconditions( agent );
-                    action.fixEffects( agent );
-                    actionList.Add( action );
-                    break;
-                case "ActionPickUp":
-                    action = new ActionPickUp( "ActionPickUp", pair.obj1, pair.obj2 );
-                    loc = findImportantElement( action );
-                    action.fixPreconditions( action.getArg2() );
-                    action.fixEffects( loc );
-                    actionList.Add( action );
-                    break;
-                case "ActionDropDown":
-                    action = new ActionDropDown( "ActionDropDown", pair.obj1, pair.obj2 );
-                    loc = findImportantElement( action );
-                    action.fixPreconditions( loc );
-                    action.fixEffects( action.getArg2() );
-                    actionList.Add( action );
-                    break;
-                */
-            }
+            var enumStack = new Stack<List<GameObject>.Enumerator>();
+            var itemStack = new Stack<GameObject>();
+            int index = objs.collection.Count - 1;
+            var enumerator = objs.collection[index].GetEnumerator();
+            while ( true )
+                if ( enumerator.MoveNext() )
+                {
+                    itemStack.Push( enumerator.Current );
+                    if ( index == 0 )
+                    {
+                        accum.Add( itemStack.ToArray() );
+                        itemStack.Pop();
+                    }
+                    else
+                    {
+                        enumStack.Push( enumerator );
+                        enumerator = objs.collection[--index].GetEnumerator();
+                    }
+                }
+                else
+                {
+                    if ( ++index == objs.collection.Count )
+                        break;
+                    itemStack.Pop();
+                    enumerator = enumStack.Pop();
+                }
         }
-        return actionList;
+        return accum;
     }
 
-    /* THIS IS FOR THE LOCS&KNIFE DEMOS
-    GameObject findImportantElement( iThinkAction action )
+    private List<GameObject[]> CartesianProductRecursive()
     {
-        GameObject loc = workingParts.Find( delegate( GameObject obj1 )
-         {
-             //Debug.Log( "obj1.name: " + obj1.name );
-             //Debug.Log( "action.getArg2().name: " + action.getArg2().name );
-             //Debug.Log( "-------------------");
-             if ( obj1.name == action.getArg2().name )
-                 return true;
-             return false;
-         } );
-        //Debug.Log( loc );
-        return loc;
-    }
-
-    List<unify> fixMovements( List<GameObject> Locations )
-    {
-        List<unify> pairs = new List<unify>();
-        for ( int i = 0 ; i < Locations.Count ; i++ )
+        List<GameObject[]> accum = new List<GameObject[]>();
+        if ( objs.collection.Count > 0 )
         {
-            unify pair = new unify();
-            if ( i == Locations.Count - 1 )
-            {
-                pair.obj1 = Locations[i];
-                pair.obj2 = Locations[0];
-            }
+            CartesianRecurse( accum, new Stack<GameObject>(), objs.collection.Count - 1 );
+        }
+        return accum;
+    }
+
+    private void CartesianRecurse( List<GameObject[]> accum, Stack<GameObject> stack, int index )
+    {
+        foreach ( GameObject item in objs.collection[index] )
+        {
+            stack.Push( item );
+            if ( index == 0 )
+                accum.Add( stack.ToArray() );
             else
             {
-                pair.obj1 = Locations[i];
-                pair.obj2 = Locations[i + 1];
+                CartesianRecurse( accum, stack, index - 1 );
             }
-            pairs.Add( pair );
+            stack.Pop();
         }
-        return pairs;
     }
 
-    List<unify> fixActionPairs( List<GameObject> GameParts, GameObject agent )
+    //Action generator
+    //! TODO:USER
+    public virtual void actionGenerator( List<GameObject[]> combinations )
     {
-        List<unify> pairs = new List<unify>();
-        foreach ( GameObject part in GameParts )
+        iThinkAction action;
+        foreach ( GameObject[] matrix in combinations )
         {
-            unify pair = new unify();
-            pair.obj1 = agent;
-            pair.obj2 = part;
-            pairs.Add( pair );
+            /* SIMPLEGAME */
+            /**/
+            switch ( schemaElements[0] )
+            {
+                case "ActionSGMove":
+                    action = new ActionSGMove( "Move", matrix[0], matrix[1], matrix[2] );
+                    tempActionList.Add( action );
+                    break;
+                case "ActionSGTurn":
+                    action = new ActionSGTurn( "Turn", matrix[0], matrix[1] );
+                    tempActionList.Add( action );
+                    break;
+                case "ActionSGStab":
+                    action = new ActionSGStab( "Stab", matrix[0], matrix[1] );
+                    tempActionList.Add( action );
+                    break;
+                case "ActionSGShoot":
+                    action = new ActionSGShoot( "Shoot", matrix[0], matrix[1], matrix[2], matrix[3] );
+                    tempActionList.Add( action );
+                    break;
+                case "ActionSGPickUp":
+                    action = new ActionSGPickUp( "PickUp", matrix[0], matrix[1] );
+                    tempActionList.Add( action );
+                    break;
+            }
+            /**/
+
+            /* GRIPPER
+            /*
+            switch ( schemaElements[0] )
+            {
+                case "ActionGrPickUp":
+                    action = new ActionGrPickUp( "PickUp", matrix[0] );
+                    tempActionList.Add( action );
+                    break;
+                case "ActionGrUnStack":
+                    action = new ActionGrUnStack( "UnStack", matrix[0], matrix[1] );
+                    tempActionList.Add( action );
+                    break;
+                case "ActionGrPutDown":
+                    action = new ActionGrPutDown( "PutDown", matrix[0] );
+                    tempActionList.Add( action );
+                    break;
+                case "ActionGrStack":
+                    action = new ActionGrStack( "Stack", matrix[0], matrix[1] );
+                    tempActionList.Add( action );
+                    break;
+            }
+            */
         }
-        return pairs;
     }
-    */
+
+    //Clear data
+    private void clearData()
+    {
+        objs.collection.Clear();
+        tempActionList.Clear();
+        globalCounter = 0;
+    }
 }

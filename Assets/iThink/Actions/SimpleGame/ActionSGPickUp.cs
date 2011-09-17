@@ -12,30 +12,30 @@ class ActionSGPickUp : iThinkAction
         Obj = obj;
         Loc = loc;
 
-        fixPreconditions();
-        fixEffects();
+        initPreconditions();
+        initEffects();
     }
 
-    public override void setArg1( GameObject obj ) { Obj = obj; }
-    public override void setArg2( GameObject loc ) { Loc = loc; }
+    public void setArg1( GameObject obj ) { Obj = obj; }
+    public void setArg2( GameObject loc ) { Loc = loc; }
 
-    public override GameObject getArg1() { return Obj; }
-    public override GameObject getArg2() { return Loc; }
+    public GameObject getArg1() { return Obj; }
+    public GameObject getArg2() { return Loc; }
 
-    public override void fixPreconditions()
+    public override void initPreconditions()
     {
-        base.fixPreconditions();
-        preConditions.Add( new npcEmptyHands() );
-        preConditions.Add( new npcAt( Loc ) );
-        preConditions.Add( new objectAt( Obj, Loc ) );
+        base.initPreconditions();
+        preConditions.Add( new iThinkFact("npcEmptyHands") );
+        preConditions.Add( new iThinkFact("npcAt", Loc ) );
+        preConditions.Add( new iThinkFact("objectAt", Obj, Loc ) );
     }
 
-    public override void fixEffects()
+    public override void initEffects()
     {
-        base.fixEffects();
-        effects.Remove( new npcEmptyHands() );
-        effects.Remove( new objectAt( Obj, Loc ) );
-        effects.Add( new npcHolding( Obj ) );
+        base.initEffects();
+        effects.Add( new iThinkFact("npcEmptyHands", false ) );
+        effects.Add( new iThinkFact("objectAt", false, Obj, Loc ) );
+        effects.Add( new iThinkFact("npcHolding", Obj ) );
     }
 
 }

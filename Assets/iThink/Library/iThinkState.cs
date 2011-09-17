@@ -23,32 +23,29 @@ using iThink;
 public class iThinkState
 {
     protected string name;
+    protected int heuristicCost;
     protected List<iThinkFact> facts;
 
     public iThinkState( iThinkState state )
     {
         facts = new List<iThinkFact>( state.facts );
+        heuristicCost = state.heuristicCost;
         name = state.name;
     }
 
     public iThinkState( string Name, List<iThinkFact> factList )
     {
         facts = new List<iThinkFact>( factList );
+        heuristicCost = 0;
         name = Name;
     }
 
     public string getName() { return name; }
-    public List<iThinkFact> getFactList() { return facts; }
 
-    public iThinkFact getFact( string name )
-    {
-        foreach ( iThinkFact fact in facts )
-        {
-            if ( fact.getName().Equals( name ) )
-                return fact;
-        }
-        return null;
-    }
+    public void setCost( int Cost ) { heuristicCost = Cost; }
+    public int getCost() { return heuristicCost; }
+
+    public List<iThinkFact> getFactList() { return facts; }
 
     public void setFact( iThinkFact fact )
     {
@@ -58,9 +55,7 @@ public class iThinkState
                 return;
         }
         facts.Add( fact );
-        //DebugConsole.Log( "Added fact - " + fact.getName() + " (" + fact.getObj1().name + "-" + fact.getObj2().name + ")", Color.gray );
     }
-
     public void delFact( iThinkFact fact )
     {
         foreach ( iThinkFact _fact in this.facts )
@@ -70,35 +65,6 @@ public class iThinkState
                 facts.Remove( _fact );
                 break;
             }
-        }
-        //DebugConsole.Log( "Removed fact - " + fact.getName() + " (" + fact.getObj1().name + "-" + fact.getObj2().name + ")", Color.gray );
-    }
-
-    public void debugPrint( string msg )
-    {
-        DebugConsole.Log( msg + "\n-= State =-", Color.cyan );
-        foreach ( iThinkFact fact in facts )
-        {
-            if ( fact.getObj2() != null )
-                DebugConsole.Log( "Fact: " + fact.getName() + "( " + fact.getObj1().name + ", " + fact.getObj2().name + " )" );
-            else if ( fact.getObj1() != null )
-                DebugConsole.Log( "Fact: " + fact.getName() + "( " + fact.getObj1().name + " )" );
-            else
-                DebugConsole.Log( "Fact: " + fact.getName() );
-        }
-    }
-
-    public void debugPrint( string msg, Color colour )
-    {
-        DebugConsole.Log( msg + "\n-= State =-", colour );
-        foreach ( iThinkFact fact in facts )
-        {
-            if ( fact.getObj2() != null )
-                DebugConsole.Log( "Fact: " + fact.getName() + "( " + fact.getObj1().name + ", " + fact.getObj2().name + " )", colour );
-            else if ( fact.getObj1() != null )
-                DebugConsole.Log( "Fact: " + fact.getName() + "( " + fact.getObj1().name + " )", colour );
-            else
-                DebugConsole.Log( "Fact: " + fact.getName(), colour );
         }
     }
 
@@ -134,5 +100,18 @@ public class iThinkState
     public static bool operator !=( iThinkState state1, iThinkState state2 )
     {
         return !( state1 == state2 );
+    }
+
+    public void debugPrint()
+    {
+        String msg = "[state] ";
+        msg += this.name + " //";
+        foreach ( var fact in facts )
+        {
+            msg += " " + fact.getName();
+            if ( fact.getName().Equals( "playerDown" ) )
+                Debug.LogError( "PLAYER IS DOWN!" );
+        }
+        Debug.Log( msg );
     }
 }
