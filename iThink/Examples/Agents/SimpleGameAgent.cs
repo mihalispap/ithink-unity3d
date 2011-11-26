@@ -7,6 +7,15 @@ public class SimpleGameAgent : MonoBehaviour
 {
     iThinkBrain brain;
 
+    public string[] schemaList = {
+                                     "ActionSGMove-3-Tag~location-Tag~location-Tag~direction",
+                                     "ActionSGTurn-2-Tag~direction-Tag~direction",
+                                     "ActionSGShoot-4-Tag~location-Tag~location-Tag~direction-Tag~gun",
+                                     "ActionSGStab-2-Tag~location-Tag~knife",
+                                     "ActionSGPickUp-2-Tag~knife-Tag~location",
+                                     "ActionSGPickUp-2-Tag~gun-Tag~location"
+                                 };
+
     public void Awake()
     {
         brain = new iThinkBrain();
@@ -14,51 +23,53 @@ public class SimpleGameAgent : MonoBehaviour
         // Sensing GameObjects
         List<String> tags = new List<String>();
         tags.Add( "direction" ); tags.Add( "location" ); tags.Add( "player" ); tags.Add( "npc" ); tags.Add( "gun" ); tags.Add( "knife" );
-        brain.sensorySystem.OmniscientUpdate( this.gameObject, brain.gameParts, tags );
+        brain.sensorySystem.OmniscientUpdate( this.gameObject, tags );
 
-        Debug.LogWarning( "gameParts count: " + brain.gameParts.Count );
+        Debug.LogWarning( "knownObjects count: " + brain.sensorySystem.getKnownObjects().Count );
 
         // Building knowledge
         SimplegameTest();
         brain.curState = brain.startState;
 
         // Building Actions from knowledge
-        brain.actionSet = new iThinkActionSet( brain.getKnownFacts() );
-        brain.actionSet.Init( this.gameObject, brain.getKnownObjects() );
+        brain.ActionManager = new iThinkActionManager();
+        brain.ActionManager.initActionList( this.gameObject, schemaList, brain.getKnownObjects(), brain.getKnownFacts() );
 
-        Debug.LogWarning( "action count: " + brain.actionSet.getActions().Count );
+        Debug.LogWarning( "action count: " + brain.ActionManager.getActions().Count );
 
         // Init search        
-        brain.planner.forwardSearch( brain.startState, brain.goalState, brain.actionSet, 1 );
-        brain.planner.getPlan().printPlan();
+        brain.planner.forwardSearch( brain.startState, brain.goalState, brain.ActionManager, 1 );
+        brain.planner.getPlan().debugPrintPlan();
     }
 
     void SimplegameTest()
     {
+        List<iThinkFact> factList;
+
         ///////////////////////////
         // Building current state//
         ///////////////////////////
-        brain.factList = new List<iThinkFact>();
-        brain.factList.Add( new iThinkFact( "npcAt", GameObject.Find( "LOC1" ) ) );
-        brain.factList.Add( new iThinkFact( "npcFacing", GameObject.Find( "UP" ) ) );
-        brain.factList.Add( new iThinkFact( "npcEmptyHands" ) );
-        brain.factList.Add( new iThinkFact( "playerAt", GameObject.Find( "LOC8" ) ) );
-        brain.factList.Add( new iThinkFact( "knife", GameObject.Find( "KNIFE" ) ) );
-        brain.factList.Add( new iThinkFact( "gun", GameObject.Find( "GUN" ) ) );
-        brain.factList.Add( new iThinkFact( "objectAt", GameObject.Find( "KNIFE" ), GameObject.Find( "LOC3" ) ) );
-        brain.factList.Add( new iThinkFact( "objectAt", GameObject.Find( "GUN" ), GameObject.Find( "LOC6" ) ) );
+        factList = new List<iThinkFact>();
+        factList.Add( new iThinkFact( "npcAt", GameObject.Find( "LOC1" ) ) );
+        factList.Add( new iThinkFact( "npcFacing", GameObject.Find( "UP" ) ) );
+        factList.Add( new iThinkFact( "npcEmptyHands" ) );
+        factList.Add( new iThinkFact( "playerAt", GameObject.Find( "LOC8" ) ) );
+        factList.Add( new iThinkFact( "knife", GameObject.Find( "KNIFE" ) ) );
+        factList.Add( new iThinkFact( "gun", GameObject.Find( "GUN" ) ) );
+        factList.Add( new iThinkFact( "objectAt", GameObject.Find( "KNIFE" ), GameObject.Find( "LOC3" ) ) );
+        factList.Add( new iThinkFact( "objectAt", GameObject.Find( "GUN" ), GameObject.Find( "LOC6" ) ) );
 
-        initAdjacents( brain.factList );
-        brain.startState = new iThinkState( "Initial", new List<iThinkFact>( brain.factList ) );
+        initAdjacents( factList );
+        brain.startState = new iThinkState( "Initial", new List<iThinkFact>( factList ) );
 
         /////////////////
         // Create goal //
         /////////////////
-        brain.factList.Clear();
+        factList.Clear();
         //brain.factList.Add( new iThinkFact( "npcHolding", GameObject.Find( "GUN" ) ) );
-        brain.factList.Add( new iThinkFact( "playerDown" ) );
+        factList.Add( new iThinkFact( "playerDown" ) );
 
-        brain.goalState = new iThinkState( "Goal", new List<iThinkFact>( brain.factList ) );
+        brain.goalState = new iThinkState( "Goal", new List<iThinkFact>( factList ) );
     }
 
     public void initAdjacents( List<iThinkFact> factList )

@@ -1,37 +1,25 @@
-﻿///
-/// <summary>
-///
-/// iThink GOAP library v0.0.8b
-///     iThinkState.cs
-///
-/// Description of file:
-///     This class describes the list of facts (logical propositions)
-///     that constitute the knowledge of agents about the world.
-///     These states are used in the planning process to describe a node of the planning graph (search space).
-///
-/// </summary>
-/// 
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using iThink;
 
 #pragma warning disable 0660, 0661
 
+/*! @class iThinkState
+ * @brief iThinkState represents a state-node of the planning process.
+
+  An iThinkState object is used in the planning process to describe a node of the planning graph (search space).
+  It contains: 
+  - its name
+  - a list of \a facts (literals)
+  - the evaluated \a cost of the state-node during the search process
+*/
+
 public class iThinkState
 {
-    protected string name;
-    protected int heuristicCost;
-    protected List<iThinkFact> facts;
-
-    public iThinkState( iThinkState state )
-    {
-        facts = new List<iThinkFact>( state.facts );
-        heuristicCost = state.heuristicCost;
-        name = state.name;
-    }
+    protected List<iThinkFact> facts;   /// The list of facts which constitute the state
+    protected int heuristicCost;        /// The total search cost up to this node, if needed by the search algorithm
+    protected string name;              /// The name of
 
     public iThinkState( string Name, List<iThinkFact> factList )
     {
@@ -40,14 +28,22 @@ public class iThinkState
         name = Name;
     }
 
-    public string getName() { return name; }
+    public iThinkState( iThinkState state )
+    {
+        facts = new List<iThinkFact>( state.facts );
+        heuristicCost = state.heuristicCost;
+        name = state.name;
+    }
 
-    public void setCost( int Cost ) { heuristicCost = Cost; }
+    public string getName() { return name; }
+    public void setName( string name ) { this.name = name; }
     public int getCost() { return heuristicCost; }
+    public void setCost( int cost ) { heuristicCost = cost; }
 
     public List<iThinkFact> getFactList() { return facts; }
 
-    public void setFact( iThinkFact fact )
+    /// If the fact isn't part of the list, it is inserted. Called by iThinkFact::applyFact()
+    public void addFact( iThinkFact fact )
     {
         foreach ( iThinkFact _fact in this.facts )
         {
@@ -56,6 +52,8 @@ public class iThinkState
         }
         facts.Add( fact );
     }
+
+    /// If the fact is part of the list, it is deleted. Called by iThinkFact::applyFact()
     public void delFact( iThinkFact fact )
     {
         foreach ( iThinkFact _fact in this.facts )
@@ -107,11 +105,7 @@ public class iThinkState
         String msg = "[state] ";
         msg += this.name + " //";
         foreach ( var fact in facts )
-        {
             msg += " " + fact.getName();
-            if ( fact.getName().Equals( "playerDown" ) )
-                Debug.LogError( "PLAYER IS DOWN!" );
-        }
         Debug.Log( msg );
     }
 }
