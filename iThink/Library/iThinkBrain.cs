@@ -29,6 +29,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using iThinkLibrary.KnowledgeRepresentation;
+using iThinkLibrary.iThinkActionManagerUtility;
+using iThinkLibrary.iThinkPlannerUitility;
+
 /** @class iThinkBrain
     @brief iThinkBrain contains all the needed components and sample interface to implement an iThink agent.
 
@@ -63,7 +67,7 @@ public class iThinkBrain
     {
         lastUpdate = Time.time;
 
-        planner = new iThinkPlanner();
+        planner = new BestFS();
         factList = new List<iThinkFact>();
         sensorySystem = new iThinkSensorySystem();
     }

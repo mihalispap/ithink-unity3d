@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using iThinkLibrary.KnowledgeRepresentation;
+using iThinkLibrary.iThinkActionRepresentation;
 
 class ActionSGStab : iThinkAction
 {
@@ -15,6 +17,7 @@ class ActionSGStab : iThinkAction
 
     public override void initPreconditions()
     {
+        base.initPreconditions();
         preconditions.Add( new iThinkFact("npcHolding", Knife ) );
         preconditions.Add( new iThinkFact("knife", Knife ) );
         preconditions.Add( new iThinkFact("npcAt", Loc ) );
@@ -23,6 +26,7 @@ class ActionSGStab : iThinkAction
 
     public override void initEffects()
     {
+        base.initEffects();
         effects.Add( new iThinkFact("playerDown") );
     }
 

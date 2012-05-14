@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using iThinkLibrary.KnowledgeRepresentation;
+using iThinkLibrary.iThinkActionRepresentation;
 
 class ActionSGShoot : iThinkAction
 {
@@ -17,6 +19,7 @@ class ActionSGShoot : iThinkAction
 
     public override void initPreconditions()
     {
+        base.initPreconditions();
         preconditions.Add( new iThinkFact("npcHolding", Gun ) );
         preconditions.Add( new iThinkFact("gun", Gun ) );
         preconditions.Add( new iThinkFact("adjacent", Locnpc, Locplayer, Dir ) );
@@ -27,6 +30,7 @@ class ActionSGShoot : iThinkAction
 
     public override void initEffects()
     {
+        base.initEffects();
         effects.Add( new iThinkFact("playerDown") );
     }
 

@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using iThinkLibrary.KnowledgeRepresentation;
+using iThinkLibrary.iThinkActionRepresentation;
 
 class ActionSGMove : iThinkAction
 {
@@ -19,6 +18,7 @@ class ActionSGMove : iThinkAction
 
     public override void initPreconditions()
     {
+        base.initPreconditions();
         preconditions.Add( new iThinkFact( "npcAt", From ) );
         preconditions.Add( new iThinkFact( "npcFacing", Dir ) );
         preconditions.Add( new iThinkFact( "adjacent", From, To, Dir ) );
@@ -26,8 +26,8 @@ class ActionSGMove : iThinkAction
 
     public override void initEffects()
     {
+        base.initEffects();
         effects.Add( new iThinkFact( "npcAt", To ) );
         effects.Add( new iThinkFact( "npcAt", false, From ) );
     }
-
 }

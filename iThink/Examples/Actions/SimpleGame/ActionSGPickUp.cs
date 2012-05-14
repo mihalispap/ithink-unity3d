@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using iThinkLibrary.KnowledgeRepresentation;
+using iThinkLibrary.iThinkActionRepresentation;
 
 class ActionSGPickUp : iThinkAction
 {
@@ -15,6 +17,7 @@ class ActionSGPickUp : iThinkAction
 
     public override void initPreconditions()
     {
+        base.initPreconditions();
         preconditions.Add( new iThinkFact("npcEmptyHands") );
         preconditions.Add( new iThinkFact("npcAt", Loc ) );
         preconditions.Add( new iThinkFact("objectAt", Obj, Loc ) );
@@ -22,6 +25,7 @@ class ActionSGPickUp : iThinkAction
 
     public override void initEffects()
     {
+        base.initEffects();
         effects.Add( new iThinkFact("npcEmptyHands", false ) );
         effects.Add( new iThinkFact("objectAt", false, Obj, Loc ) );
         effects.Add( new iThinkFact("npcHolding", Obj ) );

@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using iThinkLibrary.KnowledgeRepresentation;
+using iThinkLibrary.iThinkActionRepresentation;
 
 class ActionSGTurn : iThinkAction
 {
@@ -18,11 +20,14 @@ class ActionSGTurn : iThinkAction
 
     public override void initPreconditions()
     {
+        base.initPreconditions();
         preconditions.Add( new iThinkFact("npcFacing", Fdir ) );
+        preconditions.Add( new iThinkFact("canTurn", Fdir, Tdir ) );
     }
 
     public override void initEffects()
     {
+        base.initEffects();
         effects.Add( new iThinkFact("npcFacing", Tdir ) );
         effects.Add( new iThinkFact("npcFacing", false, Fdir ) );
     }
